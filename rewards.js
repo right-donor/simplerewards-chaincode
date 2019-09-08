@@ -90,6 +90,33 @@ let Chaincode = class {
     }
 
     /**
+     * Read an User's information
+     * @param {Object} stub Chaincode code executor
+     * @param {Object} args userId
+     * @param {Object} thisClass References to this class
+     */
+    async readUser(stub,args,thisClass) {
+         // Input Sanitation
+         if (args.length != 1) {
+            throw new Error('Incorrect number of arguments. Expecting 1')
+        }
+        // Start query
+        let ID = args[0]
+        if (!ID) {
+            throw new Error('user ID must not be empty')
+        }
+        //Query the ledger
+        let userAsBytes = await stub.getState(ID)
+        if (!userAsBytes.toString()) {
+            let jsonResp = {}
+            jsonResp.Error = 'User: '+ID+' does not exist'
+            throw new Error(JSON.stringify(jsonResp))
+        }
+        console.info('[USER RETRIEVED] ~ ' + userAsBytes.toString() + ' ~ [USER RETRIEVED]')
+        return userAsBytes
+    }
+
+    /**
      * Add tokens to an user's account
      * @param {Object} stub Chaincode code executor
      * @param {Object} args userId and donated amount
@@ -97,7 +124,7 @@ let Chaincode = class {
      */
     async receiveTokens(stub, args, thisClass) {
         //Input Sanitation
-        if (args.length <= 2) {
+        if (args.length != 2) {
             throw new Error('Incorrect number of arguments. Expecting 2')
         }
 
@@ -120,18 +147,18 @@ let Chaincode = class {
         //Create a JSON for the user
         let userToReward = {}
         try {
-            userToReward = JSON.parse(userToReward.toString())
+            userToReward = JSON.parse(accountAsBytes.toString())
         }catch(error) {
             let jsonResp = {}
             jsonResp.error = 'Failed to decode JSON of: ' + userID
             throw new Error(jsonResp)
         }
         //Change its data
-        let rewarded = parseInt(donatedAmount)
-        let acquired = parseInt(userToReward.tokens)
-        let total = (rewarded + acquired).toString()
+        let rewarded = parseInt(donatedAmount.toString())
+        let acquired = parseInt((userToReward.tokens).toString())
+        let total = (rewarded + acquired)
         userToReward.tokens = total
-        userToReward.level = total/1000 > userToReward.level ? Math.floor(total/1000) : userToReward.level
+        userToReward.level = total/1000 > parseInt(userToReward.level.toString()) ? Math.floor(total/1000).toString() : userToReward.level.toString()
 
         //Rewrite it to the ledger
         let accountJSONasBytes = Buffer.from(JSON.stringify(userToReward))
@@ -147,7 +174,7 @@ let Chaincode = class {
      */
     async spendTokens(stub,args,thisClass){
         //Input Sanitation
-        if (args.length <= 2) {
+        if (args.length != 2) {
             throw new Error('Incorrect number of arguments. Expecting 2')
         }
 
@@ -170,14 +197,14 @@ let Chaincode = class {
         //Create a JSON for the user
         let userToReward = {}
         try {
-            userToReward = JSON.parse(userToReward.toString())
+            userToReward = JSON.parse(accountAsBytes.toString())
         }catch(error) {
             let jsonResp = {}
             jsonResp.error = 'Failed to decode JSON of: ' + userID
             throw new Error(jsonResp)
         }
         //Change its data
-        let toSpend = parseInt(spendingAmount)
+        let toSpend = parseInt(spendingAmount.toString())
         let acquired = parseInt(userToReward.tokens)
         if (toSpend > acquired) {
             throw new Error('Token amount: '+userToReward.tokens+' is lower than amount to spend: '+spendingAmount)
@@ -192,10 +219,10 @@ let Chaincode = class {
     }
 
     /**
-     * Iterates over all historic data from a Blood Bag
+     * Iterates over all historic data from a USER
      * @param {Iterator} iterator Results Iterator
      * @param {Object} isHistory Checks if it's part of history
-     * @returns {Object} Blood bag history
+     * @returns {Object} USER history
      */
     async getAllResults(iterator, isHistory) {
         let allResults = []
@@ -237,9 +264,9 @@ let Chaincode = class {
     /**
      * Gets the historic data from an user's spending history
      * @param {Object} stub Chaincode code executor
-      * @param {Object} args UserId
-      * @param {Object} thisClass References to this class
-      * @returns {Object} Blood Bag
+     * @param {Object} args UserId
+     * @param {Object} thisClass References to this class
+     * @returns {Object} USER
      */
     async getTransactionHistory(stub, args, thisClass) {
         //Input Sanitation
