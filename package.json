@@ -1,0 +1,27 @@
+{
+  "name": "simplerewards-chaincode",
+  "version": "1.0.0",
+  "description": "Simple Rewards system for Hyperledger Fabric",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start":"node blood.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/a01334390/simplerewards-chaincode.git"
+  },
+  "dependencies": {
+		"fabric-shim": "~1.4.0"
+	},
+  "keywords": [
+    "rewards",
+    "crypto"
+  ],
+  "author": "Fernando Martin Garcia Del Angel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/a01334390/simplerewards-chaincode/issues"
+  },
+  "homepage": "https://github.com/a01334390/simplerewards-chaincode#readme"
+}
